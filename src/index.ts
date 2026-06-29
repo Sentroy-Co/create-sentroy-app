@@ -5,7 +5,7 @@ import { spawnSync } from "node:child_process"
 import * as p from "@clack/prompts"
 import pc from "picocolors"
 import { generate } from "./generate.js"
-import { ALL_SERVICES, type Framework, type Service, type UiLib } from "./config.js"
+import { ALL_SERVICES, type AuthProvider, type Framework, type Service, type UiLib } from "./config.js"
 
 function detectPm(): "npm" | "pnpm" | "yarn" | "bun" {
   const ua = process.env.npm_config_user_agent ?? ""
@@ -68,6 +68,19 @@ async function main() {
   })) as Service[]
   if (p.isCancel(services)) return p.cancel("Cancelled.")
 
+  let authProvider: AuthProvider = "sentroy"
+  if (services.includes("auth")) {
+    authProvider = (await p.select({
+      message: "Auth provider?",
+      options: [
+        { value: "sentroy", label: "Sentroy Auth Project", hint: "hosted user pool, no database" },
+        { value: "better-auth", label: "better-auth + Sign in with Sentroy", hint: "self-hosted (SQLite) + Sentroy OAuth" },
+      ],
+      initialValue: "sentroy" as AuthProvider,
+    })) as AuthProvider
+    if (p.isCancel(authProvider)) return p.cancel("Cancelled.")
+  }
+
   type PmChoice = "skip" | "npm" | "pnpm" | "yarn" | "bun"
   const defaultPm = detectPm()
   const pm = (await p.select({
@@ -91,7 +104,7 @@ async function main() {
   const s = p.spinner()
   s.start("Scaffolding project")
   try {
-    generate({ dir, projectName, framework, ui, services })
+    generate({ dir, projectName, framework, ui, services, authProvider })
   } catch (err) {
     s.stop("Scaffolding failed")
     p.log.error(err instanceof Error ? err.message : String(err))

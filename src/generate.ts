@@ -1,7 +1,7 @@
 import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { buildDeps, buildEnv, RENAME, TEXT_EXT, type Framework, type Service, type UiLib } from "./config.js"
+import { buildDeps, buildEnv, RENAME, TEXT_EXT, type AuthProvider, type Framework, type Service, type UiLib } from "./config.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const TEMPLATES = path.join(__dirname, "..", "templates")
@@ -12,6 +12,8 @@ export interface GenerateOptions {
   framework: Framework
   ui: UiLib
   services: Service[]
+  /** Auth engine when `auth` is in services. */
+  authProvider: AuthProvider
 }
 
 function copyDir(src: string, dest: string, projectName: string) {
@@ -37,8 +39,10 @@ function copyFile(from: string, to: string, projectName: string, origName: strin
 }
 
 export function generate(opts: GenerateOptions) {
-  const { dir, projectName, framework, ui, services } = opts
+  const { dir, projectName, framework, ui, services, authProvider } = opts
   const has = (s: Service) => services.includes(s)
+  // auth → auth-<provider> tree; storage/email → their own.
+  const svcDir = (s: Service) => (s === "auth" ? `auth-${authProvider}` : s)
   // next templates live at templates/{base,base-services,ui}; RR under templates/react-router/*
   const root = framework === "next" ? TEMPLATES : path.join(TEMPLATES, "react-router")
   const fw = (sub: string) => path.join(root, sub)
@@ -51,14 +55,17 @@ export function generate(opts: GenerateOptions) {
   // 2) Per-service trees (server + UI)
   if (has("storage") || has("email")) copyDir(fw("base-services/company"), dir, projectName)
   for (const s of services) {
-    copyDir(fw(`base-services/${s}`), dir, projectName)
-    copyDir(fw(`ui/${ui}/${s}`), dir, projectName)
+    copyDir(fw(`base-services/${svcDir(s)}`), dir, projectName)
+    copyDir(fw(`ui/${ui}/${svcDir(s)}`), dir, projectName)
   }
 
-  // 3) Providers — Next picks an auth-aware providers.tsx; React Router handles
-  //    providers inside its root.tsx (root loader for session), so skip there.
+  // 3) Providers — Next picks providers.tsx. The Sentroy auth provider needs a
+  //    client SessionProvider; better-auth uses a standalone authClient (no
+  //    provider), so it falls back to base. React Router handles providers in
+  //    root.tsx, so skip there.
   if (framework === "next") {
-    const providerSrc = fw(`ui/${ui}/_providers/${has("auth") ? "auth.tsx" : "base.tsx"}`)
+    const needsSessionProvider = has("auth") && authProvider === "sentroy"
+    const providerSrc = fw(`ui/${ui}/_providers/${needsSessionProvider ? "auth.tsx" : "base.tsx"}`)
     copyFile(providerSrc, path.join(dir, "app", "providers.tsx"), projectName, "auth.tsx")
   }
 
@@ -75,7 +82,7 @@ export const features = {
   fs.writeFileSync(featuresPath, featuresBody)
 
   // 5) package.json
-  const { dependencies, devDependencies } = buildDeps(framework, ui, services)
+  const { dependencies, devDependencies } = buildDeps(framework, ui, services, authProvider)
   const scripts =
     framework === "next"
       ? { dev: "next dev", build: "next build", start: "next start" }
@@ -86,7 +93,7 @@ export const features = {
   )
 
   // 6) .env
-  const env = buildEnv(framework, services)
+  const env = buildEnv(framework, services, authProvider)
   fs.writeFileSync(path.join(dir, ".env.example"), env)
   fs.writeFileSync(path.join(dir, ".env.local"), env)
 }

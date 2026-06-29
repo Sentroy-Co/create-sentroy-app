@@ -4,6 +4,8 @@
 export type Framework = "next" | "react-router"
 export type UiLib = "shadcn" | "mui"
 export type Service = "auth" | "storage" | "email"
+/** When `auth` is selected: which auth engine. */
+export type AuthProvider = "sentroy" | "better-auth"
 
 export const ALL_SERVICES: Service[] = ["auth", "storage", "email"]
 
@@ -85,29 +87,37 @@ const SERVICE_DEPS: Record<Service, { deps: Record<string, string>; devDeps: Rec
   email: { deps: { "@sentroy-co/client-sdk": "^2.17.0" }, devDeps: {} },
 }
 
+// Auth provider deps (only when `auth` selected).
+const AUTH_DEPS: Record<AuthProvider, { deps: Record<string, string>; devDeps: Record<string, string> }> = {
+  // Sentroy Auth Project — hosted user pool, no DB. JWT verify via jose.
+  sentroy: { deps: { jose: "^5.9.6" }, devDeps: {} },
+  // better-auth — self-hosted users (SQLite) + Sign in with Sentroy (OAuth).
+  "better-auth": {
+    deps: { "better-auth": "^1.6.2", "better-sqlite3": "^11.8.1" },
+    devDeps: { "@types/better-sqlite3": "^7.6.12" },
+  },
+}
+
 function merge(...maps: Record<string, string>[]): Record<string, string> {
   const out: Record<string, string> = {}
   for (const m of maps) for (const [k, v] of Object.entries(m)) out[k] = v
   return Object.fromEntries(Object.entries(out).sort(([a], [b]) => a.localeCompare(b)))
 }
 
-export function buildDeps(framework: Framework, ui: UiLib, services: Service[]) {
+export function buildDeps(framework: Framework, ui: UiLib, services: Service[], authProvider: AuthProvider) {
+  // storage/email via SERVICE_DEPS; auth via the chosen AUTH_DEPS provider.
+  const svcDeps = services.filter((s) => s !== "auth").map((s) => SERVICE_DEPS[s].deps)
+  const svcDev = services.filter((s) => s !== "auth").map((s) => SERVICE_DEPS[s].devDeps)
+  const authDeps = services.includes("auth") ? [AUTH_DEPS[authProvider].deps] : []
+  const authDev = services.includes("auth") ? [AUTH_DEPS[authProvider].devDeps] : []
   return {
-    dependencies: merge(
-      FRAMEWORK_DEPS[framework].deps,
-      UI_DEPS[framework][ui].deps,
-      ...services.map((s) => SERVICE_DEPS[s].deps),
-    ),
-    devDependencies: merge(
-      FRAMEWORK_DEPS[framework].devDeps,
-      UI_DEPS[framework][ui].devDeps,
-      ...services.map((s) => SERVICE_DEPS[s].devDeps),
-    ),
+    dependencies: merge(FRAMEWORK_DEPS[framework].deps, UI_DEPS[framework][ui].deps, ...svcDeps, ...authDeps),
+    devDependencies: merge(FRAMEWORK_DEPS[framework].devDeps, UI_DEPS[framework][ui].devDeps, ...svcDev, ...authDev),
   }
 }
 
 // ── .env blokları (framework-agnostik — aynı server proxy güvenlik modeli) ─────
-export function buildEnv(framework: Framework, services: Service[]): string {
+export function buildEnv(framework: Framework, services: Service[], authProvider: AuthProvider): string {
   const has = (s: Service) => services.includes(s)
   const out: string[] = [
     "# ─────────────────────────────────────────────────────────────",
@@ -118,9 +128,9 @@ export function buildEnv(framework: Framework, services: Service[]): string {
     "NEXT_PUBLIC_APP_URL=http://localhost:3000",
     "",
   ]
-  if (has("auth")) {
+  if (has("auth") && authProvider === "sentroy") {
     out.push(
-      "# ── Sentroy Auth (end-user auth) ──",
+      "# ── Sentroy Auth Project (hosted end-user auth) ──",
       "# aps_ key is the MASTER key to your whole user pool — SERVER-ONLY, never ship to the browser.",
       "SENTROY_AUTH_BASE_URL=https://auth.sentroy.com",
       "SENTROY_AUTH_PROJECT_SLUG=your-project-slug",
@@ -132,6 +142,23 @@ export function buildEnv(framework: Framework, services: Service[]): string {
       out.push("# Signs the httpOnly session cookie (use a long random string).", "SESSION_SECRET=change-me-to-a-long-random-string")
     }
     out.push("")
+  }
+  if (has("auth") && authProvider === "better-auth") {
+    out.push(
+      "# ── Auth (better-auth) ──",
+      "BETTER_AUTH_SECRET=change-me-to-a-long-random-string",
+      "BETTER_AUTH_URL=http://localhost:3000",
+      "# SQLite file for better-auth tables. After install run: npx @better-auth/cli@latest migrate",
+      "DATABASE_URL=./sqlite.db",
+      "",
+      "# ── Sign in with Sentroy (OAuth / OIDC federation) ──",
+      "# Create an OAuth client at sentroy.com → redirect URI:",
+      "#   <BETTER_AUTH_URL>/api/auth/oauth2/callback/sentroy",
+      "SENTROY_OAUTH_CLIENT_ID=",
+      "SENTROY_OAUTH_CLIENT_SECRET=",
+      "SENTROY_OAUTH_DISCOVERY_URL=https://auth.sentroy.com/.well-known/openid-configuration",
+      "",
+    )
   }
   if (has("storage") || has("email")) {
     out.push(
