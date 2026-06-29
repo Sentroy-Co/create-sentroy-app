@@ -56,6 +56,20 @@ Get your keys from the Sentroy dashboard:
 - **Auth** — create an Auth Project (auth.sentroy.com) → copy its slug + `aps_` API key.
 - **Storage / Email** — create a company access token (`stk_`) with the relevant permissions; for email, verify a sending domain and note its domain id.
 
+## shadcn components & presets
+
+The shadcn variant ships a `components.json` (Next.js and React Router), so it's a
+standard shadcn project — add components/blocks and apply theme presets directly:
+
+```bash
+npx shadcn@latest add button card dialog
+npx shadcn@latest apply <preset>
+```
+
+`shadcn init --template next|react-router --preset <id>` is shadcn's own project
+creator (UI only, no Sentroy wiring) — use `create-sentroy-app` for the full
+starter and layer shadcn on top. See https://docs.sentroy.com/docs/create-app#shadcn
+
 ## Development (this package)
 
 ```bash
