@@ -16,6 +16,7 @@ The CLI asks for:
 - **Framework** — Next.js (App Router) or React Router v7 (Vite + SSR, framework mode)
 - **UI library** — shadcn/ui (Tailwind v4) or Material UI (MUI v6)
 - **Services** (à la carte) — Auth, Storage, Email (any subset)
+- **Auth provider** (when Auth is selected) — Sentroy Auth Project (hosted, no DB) or better-auth (self-hosted SQLite) + Sign in with Sentroy
 - **Package manager** + git init
 
 Both frameworks keep secrets server-side: Next.js uses route handlers + httpOnly
@@ -29,7 +30,7 @@ keys safely.
 
 | Service | What's wired |
 |---|---|
-| **Auth** | End-user signup / login / logout / password-reset + a protected `/dashboard`, backed by Sentroy Auth Projects. Server route handlers proxy to `auth.sentroy.com` and keep an **httpOnly cookie** session. JWTs are verified against the project JWKS with `jose`. |
+| **Auth** | Signup / login / logout + a protected `/dashboard`. Two providers: **Sentroy Auth Project** (hosted user pool, no DB — server routes proxy to `auth.sentroy.com` + httpOnly cookie, JWTs verified via JWKS), or **better-auth** (self-hosted users in SQLite) with **Sign in with Sentroy** (OAuth/OIDC). With better-auth, run `npx @better-auth/cli@latest migrate` once after install to create the tables. |
 | **Storage** | `/storage` page with file upload + listing through your Sentroy buckets, via a server route. |
 | **Email** | `/email` page that sends transactional email through a server route using your verified domain. |
 
