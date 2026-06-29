@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { Link } from "react-router"
 import { features } from "@/lib/features"
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export function SiteHeader() {
   const [user, setUser] = useState<{ email: string } | null>(null)
@@ -45,9 +46,10 @@ export function SiteHeader() {
             </Link>
           ) : null}
         </nav>
-        {features.auth ? (
-          <div className="ms-auto flex items-center gap-2">
-            {loading ? null : user ? (
+        <div className="ms-auto flex items-center gap-2">
+          <ThemeToggle />
+          {features.auth ? (
+            loading ? null : user ? (
               <>
                 <span className="hidden text-sm text-muted-foreground sm:inline">{user.email}</span>
                 <Button variant="outline" size="sm" onClick={() => void signOut()}>
@@ -58,9 +60,9 @@ export function SiteHeader() {
               <Link to="/login">
                 <Button size="sm">Sign in</Button>
               </Link>
-            )}
-          </div>
-        ) : null}
+            )
+          ) : null}
+        </div>
       </div>
     </header>
   )
