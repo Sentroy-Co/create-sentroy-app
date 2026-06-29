@@ -5,7 +5,7 @@ import { spawnSync } from "node:child_process"
 import * as p from "@clack/prompts"
 import pc from "picocolors"
 import { generate } from "./generate.js"
-import { ALL_SERVICES, type Service, type UiLib } from "./config.js"
+import { ALL_SERVICES, type Framework, type Service, type UiLib } from "./config.js"
 
 function detectPm(): "npm" | "pnpm" | "yarn" | "bun" {
   const ua = process.env.npm_config_user_agent ?? ""
@@ -35,6 +35,16 @@ async function main() {
     },
   })) as string
   if (p.isCancel(projectName)) return p.cancel("Cancelled.")
+
+  const framework = (await p.select({
+    message: "Framework?",
+    options: [
+      { value: "next", label: "Next.js", hint: "App Router, server routes + httpOnly cookies" },
+      { value: "react-router", label: "React Router v7", hint: "Vite + SSR (framework mode), loaders/actions" },
+    ],
+    initialValue: "next" as Framework,
+  })) as Framework
+  if (p.isCancel(framework)) return p.cancel("Cancelled.")
 
   const ui = (await p.select({
     message: "UI library?",
@@ -81,7 +91,7 @@ async function main() {
   const s = p.spinner()
   s.start("Scaffolding project")
   try {
-    generate({ dir, projectName, ui, services })
+    generate({ dir, projectName, framework, ui, services })
   } catch (err) {
     s.stop("Scaffolding failed")
     p.log.error(err instanceof Error ? err.message : String(err))
@@ -116,7 +126,7 @@ async function main() {
 
   p.note(steps.join("\n"), "Next steps")
   p.outro(
-    `${pc.green("Done!")} ${services.length ? `Wired: ${services.join(", ")} · ${ui}` : `Bare ${ui} app`}\n` +
+    `${pc.green("Done!")} ${framework}/${ui}${services.length ? ` · ${services.join(", ")}` : " · bare"}\n` +
       `Docs: ${pc.underline("https://docs.sentroy.com")}`,
   )
 }

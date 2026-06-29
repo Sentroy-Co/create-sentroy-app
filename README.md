@@ -1,6 +1,6 @@
 # create-sentroy-app
 
-Scaffold a [Next.js](https://nextjs.org) app pre-wired to [Sentroy](https://sentroy.com) — **Auth**, **Storage** and **Email** — with your choice of **shadcn/ui** or **Material UI**.
+Scaffold a **Next.js** or **React Router v7** app pre-wired to [Sentroy](https://sentroy.com) — **Auth**, **Storage** and **Email** — with your choice of **shadcn/ui** or **Material UI**.
 
 ```bash
 npm create sentroy-app@latest
@@ -13,9 +13,15 @@ bun create sentroy-app
 The CLI asks for:
 
 - **Project name**
+- **Framework** — Next.js (App Router) or React Router v7 (Vite + SSR, framework mode)
 - **UI library** — shadcn/ui (Tailwind v4) or Material UI (MUI v6)
 - **Services** (à la carte) — Auth, Storage, Email (any subset)
 - **Package manager** + git init
+
+Both frameworks keep secrets server-side: Next.js uses route handlers + httpOnly
+cookies; React Router uses loaders/actions + resource routes with a signed cookie
+session. A pure client-only SPA isn't offered because it can't hold the master
+keys safely.
 
 …then generates a ready-to-run app with only the pieces you picked.
 

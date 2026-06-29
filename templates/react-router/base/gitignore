@@ -1,0 +1,11 @@
+node_modules
+/build
+/.react-router
+.DS_Store
+*.log
+
+# env (keep .env.example, ignore real secrets)
+.env
+.env*.local
+
+*.tsbuildinfo
