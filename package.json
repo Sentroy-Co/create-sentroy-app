@@ -1,6 +1,6 @@
 {
   "name": "create-sentroy-app",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Scaffold a Next.js app pre-wired to Sentroy Auth, Storage and Email — shadcn or Material UI.",
   "type": "module",
   "bin": {

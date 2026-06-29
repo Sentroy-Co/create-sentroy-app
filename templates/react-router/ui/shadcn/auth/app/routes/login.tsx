@@ -47,12 +47,12 @@ export default function Login() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
-            {error ? <p className="text-sm text-red-600">{error}</p> : null}
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
             <Button type="submit" disabled={busy}>
               {busy ? "Signing in…" : "Sign in"}
             </Button>
           </form>
-          <div className="mt-4 flex justify-between text-sm text-neutral-500">
+          <div className="mt-4 flex justify-between text-sm text-muted-foreground">
             <Link to="/signup" className="hover:underline">
               Create account
             </Link>

@@ -23,9 +23,9 @@ export default function Dashboard() {
         <p>
           Signed in as <span className="font-medium">{user.email}</span>
         </p>
-        <p className="text-neutral-500">User ID: {user.id}</p>
-        <p className="text-neutral-500">Email verified: {String(user.emailVerified)}</p>
-        <p className="mt-2 text-neutral-500">
+        <p className="text-muted-foreground">User ID: {user.id}</p>
+        <p className="text-muted-foreground">Email verified: {String(user.emailVerified)}</p>
+        <p className="mt-2 text-muted-foreground">
           This route is protected server-side: the loader verifies your session token (refreshing it if needed) and
           redirects to /login when absent. Use the header to sign out.
         </p>

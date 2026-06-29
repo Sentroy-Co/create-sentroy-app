@@ -34,7 +34,7 @@ export default function ForgotPassword() {
         </CardHeader>
         <CardContent>
           {sent ? (
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="text-sm text-muted-foreground">
               If an account exists for <span className="font-medium">{email}</span>, a reset link is on its way.
             </p>
           ) : (
@@ -48,7 +48,7 @@ export default function ForgotPassword() {
               </Button>
             </form>
           )}
-          <div className="mt-4 text-sm text-neutral-500">
+          <div className="mt-4 text-sm text-muted-foreground">
             <Link to="/login" className="hover:underline">
               Back to sign in
             </Link>

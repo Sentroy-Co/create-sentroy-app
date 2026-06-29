@@ -15,9 +15,9 @@ export default async function DashboardPage() {
         <p>
           Signed in as <span className="font-medium">{user.email}</span>
         </p>
-        <p className="text-neutral-500">User ID: {user.id}</p>
-        <p className="text-neutral-500">Email verified: {String(user.emailVerified)}</p>
-        <p className="mt-2 text-neutral-500">This page is protected by middleware + a server-side token check. Use the header to sign out.</p>
+        <p className="text-muted-foreground">User ID: {user.id}</p>
+        <p className="text-muted-foreground">Email verified: {String(user.emailVerified)}</p>
+        <p className="mt-2 text-muted-foreground">This page is protected by middleware + a server-side token check. Use the header to sign out.</p>
       </CardContent>
     </Card>
   )

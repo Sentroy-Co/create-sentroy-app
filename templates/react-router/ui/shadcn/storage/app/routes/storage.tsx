@@ -50,7 +50,7 @@ export default function Storage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Storage</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           Files are uploaded to your Sentroy bucket through a server route — your access token never reaches the browser.
         </p>
       </div>
@@ -59,7 +59,7 @@ export default function Storage() {
         <Button onClick={() => inputRef.current?.click()} disabled={busy}>
           {busy ? "Uploading…" : "Upload a file"}
         </Button>
-        {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
+        {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
       </div>
       {items.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -69,7 +69,7 @@ export default function Storage() {
                 {m.url && m.type === "image" ? (
                   <img src={m.url} alt={m.originalName} className="aspect-square w-full rounded object-cover" />
                 ) : (
-                  <div className="flex aspect-square items-center justify-center rounded bg-neutral-100 text-xs uppercase text-neutral-400 dark:bg-neutral-900">
+                  <div className="flex aspect-square items-center justify-center rounded bg-muted text-xs uppercase text-muted-foreground">
                     {m.type}
                   </div>
                 )}
@@ -81,7 +81,7 @@ export default function Storage() {
           ))}
         </div>
       ) : (
-        <p className="text-sm text-neutral-500">No files yet — upload one above.</p>
+        <p className="text-sm text-muted-foreground">No files yet — upload one above.</p>
       )}
     </div>
   )

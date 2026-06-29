@@ -57,13 +57,13 @@ export default function SignupPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
-            {error ? <p className="text-sm text-red-600">{error}</p> : null}
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
             {notice ? <p className="text-sm text-emerald-600">{notice}</p> : null}
             <Button type="submit" disabled={busy}>
               {busy ? "Creating…" : "Create account"}
             </Button>
           </form>
-          <div className="mt-4 text-sm text-neutral-500">
+          <div className="mt-4 text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link href="/login" className="hover:underline">
               Sign in

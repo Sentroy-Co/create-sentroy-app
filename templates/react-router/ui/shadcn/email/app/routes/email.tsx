@@ -34,7 +34,7 @@ export default function Email() {
     <div className="mx-auto flex max-w-md flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Email</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           Sends a transactional email through a server route using your verified Sentroy sending domain.
         </p>
       </div>
@@ -55,14 +55,14 @@ export default function Email() {
             onChange={(e) => setMessage(e.target.value)}
             required
             rows={5}
-            className="w-full rounded-lg border border-neutral-300 bg-transparent p-3 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:focus:border-neutral-300"
+            className="w-full rounded-md border border-input bg-background p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </div>
         <Button type="submit" disabled={busy}>
           {busy ? "Sending…" : "Send email"}
         </Button>
       </form>
-      {status ? <p className={status.ok ? "text-sm text-emerald-600" : "text-sm text-red-600"}>{status.text}</p> : null}
+      {status ? <p className={status.ok ? "text-sm text-emerald-600" : "text-sm text-destructive"}>{status.text}</p> : null}
     </div>
   )
 }
